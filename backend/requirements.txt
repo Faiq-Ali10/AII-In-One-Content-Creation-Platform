@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+
+langchain
+langchain-groq
+langgraph
+
+transformers
+torch
+scipy
+
+accelerate
+sentencepiece

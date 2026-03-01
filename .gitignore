@@ -1,0 +1,22 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Environment
+*.env
+backend/.env
+frontend/.env
+
+# Storage/Generated media
+/backend/storage/
+backend/storage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+/.idea/
