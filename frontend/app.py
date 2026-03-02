@@ -73,7 +73,7 @@ def render_music_ui():
         with st.spinner("🎧 Generating audio... (30-60s)"):
             try:
                 payload = {"input": prompt_to_use, "previous": st.session_state.music_context}
-                response = requests.post(f"{API_BASE_URL}/generate_music", json=payload)
+                response = requests.post(f"{API_BASE_URL}/generate_music", json=payload, verify=False)
                 
                 if response.status_code == 200:
                     data = response.json()
