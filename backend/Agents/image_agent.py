@@ -109,6 +109,4 @@ class ImageAgent():
         workflow.set_entry_point("classifier")
         workflow.set_finish_point("generator")
         
-        app = workflow.compile()
-        
-        return app
+        return workflow.compile()

@@ -2,7 +2,7 @@ def classification_prompt_image(input: str, previous_prompt: str) -> str:
     # CASE 1: No History (Simple Check)
     if not previous_prompt:
         return f"""
-        You are a classifier. Respond only with IMAGE or NOT_IMAGE.
+        You are a Image prompt classifier. Respond only with IMAGE or NOT_IMAGE.
         
         ### RULES
         1. **Gibberish/Nonsense**: Random letters (e.g. "asdf", "kjsd"), unfinished sentences, or meaningless symbols -> NOT_IMAGE
