@@ -188,7 +188,7 @@ def render_video_ui():
                     "size_choice": 2 # Default to Landscape for video
                 }
                 
-                response = requests.post(f"{API_BASE_URL}/generate_video", json=payload)
+                response = requests.post(f"{API_BASE_URL}/generate_video", json=payload, timeout=300)
                 
                 if response.status_code == 200:
                     data = response.json()
