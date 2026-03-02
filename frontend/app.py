@@ -130,7 +130,7 @@ def render_image_ui():
                     "previous": st.session_state.image_context, 
                     "size_choice": choice
                 }
-                response = requests.post(f"{API_BASE_URL}/generate_image", json=payload)
+                response = requests.post(f"{API_BASE_URL}/generate_image", json=payload, verify=False)
                 
                 if response.status_code == 200:
                     data = response.json()
@@ -188,7 +188,7 @@ def render_video_ui():
                     "size_choice": 2 # Default to Landscape for video
                 }
                 
-                response = requests.post(f"{API_BASE_URL}/generate_video", json=payload, timeout=700)
+                response = requests.post(f"{API_BASE_URL}/generate_video", json=payload, timeout=700, verify=False)
                 
                 if response.status_code == 200:
                     data = response.json()
