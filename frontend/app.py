@@ -4,9 +4,8 @@ import base64
 import os
 from dotenv import load_dotenv
 
-# --- Configuration ---
+# === Configuration ===
 load_dotenv()
-# Default to localhost if .env is missing
 API_BASE_URL = os.getenv("BACKEND_URL", "http://localhost:8000/api") 
 
 st.set_page_config(
@@ -15,26 +14,25 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- CSS for Styling ---
+# === CSS for Styling ===
 st.markdown("""
     <style>
     .stButton>button {
         width: 100%;
-        background-color: #FF4B4B;
+        background: #FF4B4B;
         color: white;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- GLOBAL MEMORY INITIALIZATION ---
-# We initialize this at the top level so it persists across re-runs
+# === GLOBAL MEMORY INITIALIZATION ===
 if "music_context" not in st.session_state:
     st.session_state.music_context = ""
 
 if "image_context" not in st.session_state:
     st.session_state.image_context = ""
 
-# --- Helper Functions: Clear Input Callbacks ---
+# === Helper Functions: Clear Input Callbacks ===
 def clear_music_input():
     st.session_state["music_temp"] = st.session_state.music_input
     st.session_state.music_input = ""
@@ -50,17 +48,17 @@ def render_music_ui():
     st.header("🎵 AI Music Generator")
     st.caption("Describe the mood, instruments, or genre.")
 
-    # --- FORM ---
+    # === FORM ===
     with st.form(key="music_form", clear_on_submit=False):
         st.text_area(
             "Music Prompt", 
             height=100, 
-            placeholder="Example: Lo-fi hip hop beat for studying, chill vibes...",
+            placeholder="Example: Lo fi hip hop beat for studying, chill vibes...",
             key="music_input"
         )
         submit_button = st.form_submit_button(label="Generate Music", on_click=clear_music_input)
 
-    # --- LOGIC ---
+    # === LOGIC ===
     if submit_button:
         prompt_to_use = st.session_state.get("music_temp", "")
 
@@ -70,7 +68,7 @@ def render_music_ui():
 
         st.info(f"🎵 Composing: **{prompt_to_use}**")
 
-        with st.spinner("🎧 Generating audio... (This may take 30-60s)"):
+        with st.spinner("🎧 Generating audio... (This may take 30 to 60s)"):
             try:
                 # 1. Send Context (Memory)
                 payload = {
@@ -85,7 +83,6 @@ def render_music_ui():
                     
                     if "music" in data and data["music"]:
                         # 2. Update Context (Save Memory)
-                        # Handle cases where backend might send 'refined' OR 'previous'
                         new_memory = data.get("refined") or data.get("previous") or ""
                         st.session_state.music_context = new_memory
                         
@@ -106,11 +103,11 @@ def render_music_ui():
                             st.write(f"**Refined Prompt:** {new_memory}")
                             st.write(f"**Memory Used:** {payload['previous'] if payload['previous'] else 'None'}")
                     else:
-                        # Display Backend Message (e.g., "Not a music prompt")
+                        # Display Backend Message
                         msg = data.get("message", "No audio data returned.")
                         st.warning(f"⚠️ {msg}")
                 else:
-                    st.error(f"Server Error: {response.status_code} - {response.text}")
+                    st.error(f"Server Error: {response.status_code} \n {response.text}")
                     
             except Exception as e:
                 st.error(f"Connection Error: {e}")
@@ -122,7 +119,7 @@ def render_image_ui():
     st.header("🎨 AI Image Generator")
     st.caption("Create stunning visuals from text.")
 
-    # --- FORM ---
+    # === FORM ===
     with st.form(key="image_form", clear_on_submit=False):
         st.text_area(
             "Image Prompt", 
@@ -137,7 +134,7 @@ def render_image_ui():
         
         submit_button = st.form_submit_button(label="Generate Image", on_click=clear_image_input)
 
-    # --- LOGIC ---
+    # === LOGIC ===
     if submit_button:
         prompt_to_use = st.session_state.get("image_temp", "")
         
@@ -186,14 +183,104 @@ def render_image_ui():
                             st.write(f"**Refined Prompt:** {data.get('refined', 'N/A')}")
                             st.write(f"**Memory Used:** {payload['previous'] if payload['previous'] else 'None'}")
                     else:
-                        # Display Backend Message (e.g., "Not an image prompt")
+                        # Display Backend Message
                         msg = data.get("message", "The agent decided not to generate an image.")
                         st.warning(f"⚠️ {msg}")
                 else:
-                    st.error(f"Server Error: {response.status_code} - {response.text}")
+                    st.error(f"Server Error: {response.status_code} \n {response.text}")
             
             except Exception as e:
                 st.error(f"Connection Error: {e}")
+
+# ==========================================
+# 🎬 SUBTITLE GENERATION UI
+# ==========================================
+def render_subtitle_ui():
+    st.header("🎬 AI Subtitle Adder")
+    st.caption("Automatically transcribe and burn subtitles into your video.")
+
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        style_label = st.radio("Subtitle Style:", ["Inline (Burned into video)", "Outline (Toggleable soft subtitles)"])
+        style_choice = 1 if "Inline" in style_label else 2
+
+    with col2:
+        position_label = st.selectbox(
+            "Subtitle Position:", 
+            ["Top", "Middle", "Bottom"],
+            disabled=(style_choice == 2)
+        )
+        
+        position_map = {
+            "Top": "top",
+            "Middle": "center",
+            "Bottom": "bottom"
+        }
+        position_choice = position_map[position_label]
+
+    if style_choice == 2:
+        st.info("Outline subtitles are attached as a distinct track. Your video player decides their exact location.")
+
+    uploaded_video = st.file_uploader("Upload a video file", type=["mp4", "mov", "avi", "mkv"])
+
+    if uploaded_video is not None:
+        st.video(uploaded_video)
+        
+        if st.button("Add Subtitles"):
+            with st.spinner("🎙️ Transcribing and processing subtitles... (This may take a few minutes)"):
+                try:
+                    video_bytes = uploaded_video.getvalue()
+                    video_b64 = base64.b64encode(video_bytes).decode("utf8")
+                    
+                    payload = {
+                        "video_b64": video_b64,
+                        "original_filename": uploaded_video.name,
+                        "subtitle_type": style_choice,
+                        "position": position_choice
+                    }
+                    
+                    response = requests.post(f"{API_BASE_URL}/add_subtitles", json=payload, verify=False, timeout=600)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        
+                        subtitled_b64 = data.get("subtitled_video_b64")
+                        if subtitled_b64:
+                            subtitled_bytes = base64.b64decode(subtitled_b64)
+                            
+                            st.success("✅ Subtitles successfully added!")
+                            
+                            if style_choice == 1:
+                                st.video(subtitled_bytes)
+                            else:
+                                st.info("💡 Web browsers cannot preview soft subtitles. Please download the video to view it with your media player.")
+                            
+                            import os
+                            name, ext = os.path.splitext(uploaded_video.name)
+                            
+                            if style_choice == 2:
+                                final_ext = ".mkv"
+                                final_mime = "video/mkv"
+                            else:
+                                final_ext = ext
+                                final_mime = uploaded_video.type
+
+                            download_name = f"{name}_subtitled{final_ext}"
+                            
+                            st.download_button(
+                                label="⬇️ Download Subtitled Video",
+                                data=subtitled_bytes,
+                                file_name=download_name,
+                                mime=final_mime
+                            )
+                        else:
+                            st.warning(f"{data.get('message', 'No video data.')}")
+                    else:
+                        st.error(f"Server Error: {response.status_code} \n {response.text}")
+                
+                except Exception as e:
+                    st.error(f"Connection Error: {e}")
 
 # ==========================================
 # 🎛️ MAIN APP LOGIC
@@ -206,19 +293,23 @@ def main():
         st.write(f"**Music Memory:** '{st.session_state.music_context}'")
         st.write(f"**Image Memory:** '{st.session_state.image_context}'")
 
+    # Add Subtitle Generator to the menu
     mode = st.sidebar.radio(
         "Choose Mode:",
-        ["Music Generator", "Image Generator"],
+        ["Music Generator", "Image Generator", "Subtitle Generator"],
         index=0 
     )
     
-    st.sidebar.markdown("---")
+    st.sidebar.markdown("***")
     st.sidebar.info("Powered by **Groq**, **HuggingFace**, and **MusicGen**.")
 
+    # Route to the correct UI
     if mode == "Music Generator":
         render_music_ui()
-    else:
+    elif mode == "Image Generator":
         render_image_ui()
+    elif mode == "Subtitle Generator":
+        render_subtitle_ui()
 
 if __name__ == "__main__":
     main()

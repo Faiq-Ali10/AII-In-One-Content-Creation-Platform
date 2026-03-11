@@ -25,7 +25,7 @@ def _load_model():
     """Load model and processor only once (lazy loading)."""
     global _processor, _model
     if _processor is None:
-        _processor = AutoProcessor.from_pretrained("facebook/musicgen-medium")
+        _processor = AutoProcessor.from_pretrained("facebook/musicgen-small")
     if _model is None:
         _model = MusicgenForConditionalGeneration.from_pretrained("facebook/musicgen-small")
     return _processor, _model

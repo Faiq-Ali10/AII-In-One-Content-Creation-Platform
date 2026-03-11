@@ -1,28 +1,30 @@
-def classification_prompt(input: str, previous_prompt: str) -> str:
-    return f"""
-    You are a classifier. Respond only with MUSIC or NOT_MUSIC.
+def classification_prompt(current_input: str, previous_prompt: str) -> str:
+    # If there is no previous prompt, use the fresh start logic
+    if not previous_prompt.strip():
+        return f"""
+        You are a strict classifier. Your only job is to determine if the user is asking to create, generate, or describe music or audio.
 
-    Behavior rules:
+        Rules:
+        * If the input asks for music (example: "make a lofi beat", "give me a jazz song"), respond MUSIC.
+        * If the input is conversational or unrelated (example: "hello", "what time is it"), respond NOT_MUSIC.
 
-    1. If previous_prompt is empty:
-    - Classify current_input normally as MUSIC or NOT_MUSIC.
-    - If current_input is empty → respond NOT_MUSIC.
+        Respond ONLY with "MUSIC" or "NOT_MUSIC". Do not include any other words.
 
-    2. If previous_prompt is NOT empty:
-    - If current_input clearly requests NEW MUSIC (e.g. "now make a jazz song", "make a rock track instead", "new beat", "let's do something different", "another one"), classify as MUSIC.
-    - If current_input appears to MODIFY the previous music request (e.g. "add drums", "make it faster", "add vocals", "make it more energetic"), classify as MUSIC.
-    - If current_input is unrelated to music or not requesting music, respond NOT_MUSIC.
+        Current Input: "{current_input}"
+        """
+    
+    # If there is a previous prompt, use the modification logic
+    else:
+        return f"""
+        You are a strict classifier. The user is currently in an active music generation session.
 
-    Examples:
+        Rules:
+        * NEW REQUEST: If the current input asks for a completely new song (example: "now make a rock song instead"), respond MUSIC.
+        * MODIFICATION: If the current input asks to change or add to the previous music (example: "add heavy drums", "make it faster", "more energetic"), respond MUSIC.
+        * UNRELATED: If the current input is completely unrelated to music or the previous prompt (example: "thanks", "how are you"), respond NOT_MUSIC.
 
-    (previous="", input="make a beat") → MUSIC
-    (previous="", input="what's up") → NOT_MUSIC
-    (previous="chill lo-fi beat", input="add drums") → MUSIC
-    (previous="chill lo-fi beat", input="now make hard techno") → MUSIC
-    (previous="chill lo-fi beat", input="what time is it") → NOT_MUSIC
+        Respond ONLY with "MUSIC" or "NOT_MUSIC". Do not include any other words.
 
-    Previous prompt: "{previous_prompt}"
-    Current input: "{input}"
-
-    Only output exactly MUSIC or NOT_MUSIC.
-    """
+        Previous Prompt: "{previous_prompt}"
+        Current Input: "{current_input}"
+        """

@@ -11,6 +11,7 @@ os.environ["GOOGLE_API_KEY"] = str(os.getenv("GOOGLE_API_KEY"))
 # 2. Import your clean routers
 from routes import music_routes
 from routes import image_routes
+from routes import subtitle_routes 
 
 app = FastAPI()
 
@@ -27,6 +28,7 @@ app.add_middleware(
 # This adds all endpoints from the other files to this app
 app.include_router(music_routes.router, prefix="/api", tags=["Music"])
 app.include_router(image_routes.router, prefix="/api", tags=["Image"])
+app.include_router(subtitle_routes.router, prefix="/api", tags=["Subtitle"])
 
 @app.get("/")
 def read_root():
